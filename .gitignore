@@ -1,0 +1,54 @@
+# Secrets — never commit
+.env
+.env.local
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.egg
+
+# Test / tooling artifacts
+.pytest_cache/
+.pytest-tmp/
+.pytest_tmp/
+pytest_basetemp/
+.codex_*/
+bt_*/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime logs & scratch
+*.log
+uvicorn*.log
+.codex_uvicorn*
+text command
+*.out
+*.err
+
+# Runtime output / uploaded data (keep code, not generated artifacts)
+veritas_operational/app_output/
+veritas_operational/uploads/
+veritas_operational/app_data/
+
+# Airflow runtime
+airflow/logs/
+airflow/plugins/__pycache__/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local tool config
+.claude/settings.local.json

@@ -1,0 +1,48 @@
+rules:
+  - name: overdue_open_critical
+    type: expr
+    severity: Critical
+    message: Critical incident still open after SLA window.
+    column: status
+    expression: "(status == 'Open') & (severity == 'Critical') & (age_hours > 12)"
+  - name: long_response_major
+    type: expr
+    severity: Major
+    message: Response time exceeded 90 minutes.
+    column: response_minutes
+    expression: "response_minutes > 90"
+  - name: negative_downtime
+    type: less_than
+    severity: Critical
+    message: Negative downtime is physically impossible.
+    column: downtime_min
+    value: 0
+  - name: excessive_scrap
+    type: greater_than
+    severity: Major
+    message: Scrap exceeded control limit.
+    column: scrap_kg
+    value: 120
+  - name: invalid_severity
+    type: not_in
+    severity: Major
+    message: Severity outside allowed operational taxonomy.
+    column: severity
+    values: ["Low", "Medium", "High", "Critical"]
+  - name: unresolved_with_closed_at_missing
+    type: expr
+    severity: Minor
+    message: Resolved incident missing close timestamp.
+    column: closed_at
+    expression: "(status == 'Resolved') & (closed_at.isna())"
+  - name: high_defect_ppm
+    type: greater_than
+    severity: Major
+    message: Defect rate above alert threshold.
+    column: defect_rate_ppm
+    value: 1500
+  - name: missing_owner_team
+    type: is_null
+    severity: Minor
+    message: Incident missing owner team.
+    column: owner_team

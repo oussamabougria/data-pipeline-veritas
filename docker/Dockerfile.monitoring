@@ -1,0 +1,12 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi uvicorn psycopg2-binary pandas numpy pyyaml openpyxl
+
+COPY monitoring /app/monitoring
+COPY veritas_operational /app/veritas_operational
+
+WORKDIR /app/monitoring
+
+CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8888"]

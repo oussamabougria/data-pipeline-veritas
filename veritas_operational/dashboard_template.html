@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Veritas - Industrial Data Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #0a0f1e;
+    --bg-2:      #0d1426;
+    --bg-3:      #111a30;
+    --line:      rgba(140, 170, 220, 0.12);
+    --line-2:    rgba(140, 170, 220, 0.22);
+    --ink:       #e6ecf5;
+    --ink-2:     #aab4c8;
+    --ink-3:     #6b7895;
+    --ink-4:     #45506a;
+
+    --blue:   #00d4ff;
+    --green:  #00ff88;
+    --red:    #ff4444;
+    --purple: #9b59ff;
+    --orange: #ff8c00;
+    --grey:   #8a96b0;
+
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(1200px 600px at 80% -10%, rgba(0,212,255,0.06), transparent 60%),
+      radial-gradient(900px 500px at 0% 100%, rgba(155,89,255,0.05), transparent 60%),
+      linear-gradient(180deg, #0a0f1e 0%, #080c19 100%);
+  }
+
+  /* faint scanline texture for ops-room feel */
+  body::before{
+    content:"";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.012) 0px,
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 1;
+  }
+
+  .shell{
+    position: relative;
+    z-index: 2;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 28px 36px 48px;
+  }
+
+  /* ============ TOPBAR ============ */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  .brand{
+    display:flex; align-items:center; gap: 14px;
+  }
+  .brand-mark{
+    width: 38px; height: 38px;
+    border: 1px solid var(--blue);
+    display:grid; place-items:center;
+    position: relative;
+    background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.02));
+  }
+  .brand-mark::before, .brand-mark::after{
+    content:""; position:absolute; background: var(--blue);
+  }
+  .brand-mark::before{ left: 6px; right: 6px; top: 50%; height: 1px; opacity:.6 }
+  .brand-mark::after{ top: 6px; bottom: 6px; left: 50%; width: 1px; opacity:.6 }
+  .brand-mark span{
+    width: 8px; height: 8px; background: var(--blue); border-radius: 50%;
+    box-shadow: 0 0 12px var(--blue);
+    z-index:1;
+  }
+  .brand-text{ display:flex; flex-direction:column; gap: 2px }
+  .brand-text .name{
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.32em;
+    color: var(--blue);
+    text-shadow: 0 0 16px rgba(0,212,255,0.35);
+  }
+  .brand-text .tag{
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .topbar-right{
+    display:flex; align-items:center; gap: 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .meta{ display:flex; flex-direction:column; gap: 2px; align-items:flex-end }
+  .meta .k{ color: var(--ink-4); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase }
+  .meta .v{ color: var(--ink); font-size: 12px }
+  .status-dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background: var(--green); box-shadow: 0 0 10px var(--green);
+    animation: blink 1.6s ease-in-out infinite;
+    margin-right: 6px;
+  }
+  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  /* ============ SECTION SHELL ============ */
+  .section{
+    background: linear-gradient(180deg, var(--bg-2), rgba(13,20,38,0.4));
+    border: 1px solid var(--line);
+    margin-bottom: 22px;
+    position: relative;
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+  }
+  .section-head .left{ display:flex; align-items:center; gap: 12px }
+  .section-tag{
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-4); letter-spacing: 0.18em;
+  }
+  .section-title{
+    font-size: 13.5px; font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .section-sub{
+    font-family: var(--mono);
+    font-size: 11px; color: var(--ink-3);
+  }
+  .section-head .right{
+    display:flex; align-items:center; gap: 18px;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-2);
+  }
+  .corner{
+    position:absolute; width: 8px; height: 8px;
+    border-color: var(--line-2); border-style: solid;
+  }
+  .corner.tl{ top:-1px; left:-1px; border-width: 1px 0 0 1px }
+  .corner.tr{ top:-1px; right:-1px; border-width: 1px 1px 0 0 }
+  .corner.bl{ bottom:-1px; left:-1px; border-width: 0 0 1px 1px }
+  .corner.br{ bottom:-1px; right:-1px; border-width: 0 1px 1px 0 }
+
+  /* ============ SECTION 1 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â PIPELINE ============ */
+  .pipeline-wrap{ padding: 26px 24px 22px }
+  .pipeline-svg{ width: 100%; height: 320px; display:block }
+
+  .node-label{
+    font-family: var(--mono);
+    font-size: 11px;
+    fill: var(--ink);
+    font-weight: 500;
+  }
+  .node-sublabel{
+    font-family: var(--mono);
+    font-size: 9.5px;
+    fill: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pipeline-legend{
+    margin-top: 6px;
+    display:flex; flex-wrap: wrap; gap: 18px;
+    padding: 12px 6px 0;
+    border-top: 1px dashed var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .lg{ display:flex; align-items:center; gap: 8px }
+  .lg-sw{ width: 10px; height: 10px; border-radius: 2px }
+
+  .ticker{
+    display:flex; align-items:baseline; gap: 10px;
+  }
+  .ticker .num{
+    font-family: var(--mono); font-weight: 600;
+    font-size: 16px; color: var(--blue);
+    text-shadow: 0 0 10px rgba(0,212,255,0.4);
+    min-width: 70px; text-align:right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ticker .unit{
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 0.18em;
+  }
+
+  /* ============ SECTION 2 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CONFIDENCE ============ */
+  .confidence-grid{
+    display: grid;
+    grid-template-columns: 1.05fr 1.4fr;
+    gap: 0;
+  }
+  .formula-pane{
+    padding: 28px 30px;
+    border-right: 1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:space-between;
+    min-height: 320px;
+  }
+  .formula{
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+  .formula .var{ color: var(--blue) }
+  .formula .op{ color: var(--ink-3); margin: 0 6px }
+  .formula .var.t{ color: #5ad6ff }
+  .formula .var.d{ color: #66ffae }
+  .formula .var.a{ color: #c79bff }
+
+  .formula-caption{
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.7;
+    max-width: 380px;
+  }
+  .formula-caption b{ color: var(--ink-2); font-weight:500 }
+
+  .cv-display{
+    margin-top: 30px;
+    border: 1px solid var(--line-2);
+    padding: 18px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    background: linear-gradient(180deg, rgba(0,212,255,0.04), transparent);
+    transition: all .25s ease;
+  }
+  .cv-display.alarm{
+    border-color: var(--red);
+    background: linear-gradient(180deg, rgba(255,68,68,0.10), transparent);
+    animation: alarmPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes alarmPulse{
+    0%,100%{ box-shadow: 0 0 0 0 rgba(255,68,68,0.0) }
+    50%{ box-shadow: 0 0 0 4px rgba(255,68,68,0.18) }
+  }
+  .cv-label{
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .cv-value{
+    font-family: var(--mono);
+    font-size: 36px; font-weight: 600;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px rgba(0,255,136,0.35);
+    transition: color .25s ease;
+  }
+  .cv-display.alarm .cv-value{
+    color: var(--red);
+    text-shadow: 0 0 14px rgba(255,68,68,0.5);
+  }
+  .cv-state{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .cv-display.alarm .cv-state{ color: var(--red) }
+
+  .gauges-pane{ padding: 26px 28px; display:flex; flex-direction:column; gap: 22px; justify-content:center }
+  .gauge{}
+  .gauge-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom: 8px;
+  }
+  .gauge-name{
+    font-family: var(--mono); font-size: 12px;
+    color: var(--ink);
+  }
+  .gauge-name .greek{ font-size: 16px; margin-right: 6px }
+  .gauge-name.t .greek{ color: #5ad6ff }
+  .gauge-name.d .greek{ color: #66ffae }
+  .gauge-name.a .greek{ color: #c79bff }
+  .gauge-q{
+    font-family: var(--sans); font-size: 11px;
+    color: var(--ink-3); font-style: italic;
+    margin-left: 10px;
+  }
+  .gauge-val{
+    font-family: var(--mono); font-size: 13px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gauge-track{
+    position: relative;
+    height: 22px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 40px),
+      rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+  }
+  .gauge-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(0,212,255,0.0), rgba(0,212,255,0.55));
+    transition: width .9s cubic-bezier(.5,.1,.2,1);
+  }
+  .gauge-fill::after{
+    content:""; position:absolute; right:0; top:0; bottom:0; width: 2px;
+    background: var(--blue);
+    box-shadow: 0 0 12px var(--blue);
+  }
+  .gauge.t .gauge-fill{ background: linear-gradient(90deg, rgba(90,214,255,0), rgba(90,214,255,0.55)); }
+  .gauge.t .gauge-fill::after{ background:#5ad6ff; box-shadow: 0 0 12px #5ad6ff }
+  .gauge.d .gauge-fill{ background: linear-gradient(90deg, rgba(102,255,174,0), rgba(102,255,174,0.55)); }
+  .gauge.d .gauge-fill::after{ background:#66ffae; box-shadow: 0 0 12px #66ffae }
+  .gauge.a .gauge-fill{ background: linear-gradient(90deg, rgba(199,155,255,0), rgba(199,155,255,0.55)); }
+  .gauge.a .gauge-fill::after{ background:#c79bff; box-shadow: 0 0 12px #c79bff }
+
+  .gauge-scale{
+    display:flex; justify-content:space-between;
+    font-family: var(--mono); font-size: 9.5px;
+    color: var(--ink-4);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ============ SECTION 3 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â EVENT FEED ============ */
+  .feed-wrap{
+    padding: 6px 0 0 0;
+    height: 320px;
+    position: relative;
+    overflow: hidden;
+  }
+  .feed-wrap::after{
+    content:""; position:absolute; left:0; right:0; top:0; height: 24px;
+    background: linear-gradient(180deg, var(--bg-2), transparent);
+    pointer-events: none; z-index: 2;
+  }
+  .feed{
+    height: 100%;
+    overflow: hidden;
+    padding: 14px 22px 14px 22px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.85;
+    display:flex; flex-direction: column; justify-content: flex-end;
+  }
+  .row{
+    display: grid;
+    grid-template-columns: 92px 22px 200px 130px 1fr;
+    gap: 14px;
+    color: var(--ink-2);
+    align-items: baseline;
+    animation: rowIn .35s ease both;
+    white-space: nowrap;
+  }
+  @keyframes rowIn{
+    from{ opacity: 0; transform: translateY(6px) }
+    to{ opacity: 1; transform: none }
+  }
+  .row .ts{ color: var(--ink-4) }
+  .row .glyph{ text-align:center; font-size: 13px }
+  .row .id{ color: var(--ink) }
+  .row .cv{ color: var(--ink-2) }
+  .row .tail{ color: var(--ink-2); white-space: nowrap; overflow:hidden; text-overflow: ellipsis }
+
+  .row.ok .glyph{ color: var(--green) }
+  .row.ok .cv{ color: var(--green) }
+
+  .row.warn .glyph{ color: var(--red) }
+  .row.warn .id{ color: #ffb1b1 }
+  .row.warn .cv{ color: var(--red) }
+  .row.warn .tail{ color: var(--red) }
+
+  .row.advisory{
+    grid-template-columns: 92px 22px 1fr;
+    color: var(--purple);
+  }
+  .row.advisory .glyph{ color: var(--purple) }
+  .row.advisory .body{
+    color: #d8c3ff;
+    white-space: normal;
+  }
+  .row.advisory .body .tag{
+    color: var(--purple);
+    margin-right: 8px;
+    font-weight: 500;
+  }
+
+  /* ============ SECTION 4 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â STATS ============ */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0;
+  }
+  .stat{
+    padding: 22px 24px 22px;
+    border-right: 1px solid var(--line);
+    position: relative;
+    min-height: 130px;
+    display:flex; flex-direction: column; justify-content: space-between;
+  }
+  .stat:last-child{ border-right: 0 }
+  .stat-label{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .stat-value{
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    margin-top: 6px;
+    line-height: 1;
+  }
+  .stat-value .small{ font-size: 18px; color: var(--ink-3); margin-left: 4px }
+  .stat-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .stat .delta{ color: var(--green) }
+  .stat.warn .stat-value{ color: var(--red); text-shadow: 0 0 14px rgba(255,68,68,0.25) }
+  .stat.accent .stat-value{ color: var(--blue) }
+  .stat.purple .stat-value{ color: var(--purple) }
+  .stat.orange .stat-value{ color: var(--orange); text-shadow: 0 0 14px rgba(255,140,0,0.22) }
+
+  .spark{
+    position:absolute; right: 18px; top: 18px;
+    width: 70px; height: 22px;
+  }
+  .spark path{ fill:none; stroke-width: 1.4; opacity:.85 }
+
+  /* ============ FOOTER ============ */
+  .footer{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-4);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .footer .crumbs{ display:flex; gap: 22px }
+  .footer .crumbs span b{ color: var(--ink-2); font-weight: 500 }
+
+  /* SVG flow specifics */
+  .node-rect{
+    fill: rgba(15, 23, 42, 0.85);
+    stroke-width: 1.2;
+  }
+  .node-rect.blue   { stroke: var(--blue);   filter: drop-shadow(0 0 6px rgba(0,212,255,0.25)) }
+  .node-rect.orange { stroke: var(--orange); filter: drop-shadow(0 0 6px rgba(255,140,0,0.25)) }
+  .node-rect.green  { stroke: var(--green);  filter: drop-shadow(0 0 6px rgba(0,255,136,0.22)) }
+  .node-rect.purple { stroke: var(--purple); filter: drop-shadow(0 0 6px rgba(155,89,255,0.25)) }
+  .node-rect.grey   { stroke: #8a96b0;       filter: drop-shadow(0 0 4px rgba(140,160,200,0.18)) }
+
+  .node-cap{
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .node-cap.blue   { fill: var(--blue) }
+  .node-cap.orange { fill: var(--orange) }
+  .node-cap.green  { fill: var(--green) }
+  .node-cap.purple { fill: var(--purple) }
+  .node-cap.grey   { fill: #b9c4dc }
+
+  .flow-path{
+    fill: none;
+    stroke: rgba(140,170,220,0.22);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+  }
+  .pulse{
+    r: 3.4;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><span></span></div>
+      <div class="brand-text">
+        <div class="name">VERITAS</div>
+        <div class="tag">Industrial Data Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="meta">
+        <div class="k">Site</div>
+        <div class="v">FAB-04 | Composites Hall</div>
+      </div>
+      <div class="meta">
+        <div class="k">Cluster</div>
+        <div class="v">veritas-prod-eu-west</div>
+      </div>
+      <div class="meta">
+        <div class="k">Time (UTC)</div>
+        <div class="v" id="utcClock">--</div>
+      </div>
+      <div class="meta">
+        <div class="k">Status</div>
+        <div class="v"><span class="status-dot"></span>OPERATIONAL</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" style="margin-top:-4px;">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-head">
+      <div class="left">
+        <span class="section-tag">S 00 / TRIGGER</span>
+        <span class="section-title">Upload Dataset</span>
+        <span class="section-sub">file upload -> backend trigger -> pipeline run</span>
+      </div>
+      <div class="right" style="gap:10px;">
+        <input id="fileInput" type="file" accept=".csv,.tsv,.json,.xlsx,.xls" style="color:var(--ink-2); background:var(--bg-3); border:1px solid var(--line-2); padding:8px 10px;">
+        <button id="uploadBtn" style="background:rgba(0,212,255,0.12); color:var(--blue); border:1px solid rgba(0,212,255,0.35); padding:9px 12px; font-family:var(--mono); cursor:pointer;">UPLOAD + RUN</button>
+        <a href="/api/export/excel" download style="background:rgba(0,212,255,0.12); color:var(--blue); border:1px solid rgba(0,212,255,0.35); padding:9px 12px; font-family:var(--mono); cursor:pointer; text-decoration:none;">EXPORT REPORT</a>
+        <span id="runStatus" style="font-family:var(--mono); color:var(--ink-2); min-width:240px;">BACKEND READY</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1 - PIPELINE -->
+  <section class="section">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-head">
+      <div class="left">
+        <span class="section-tag">S 01 / FLOW</span>
+        <span class="section-title">Live Pipeline</span>
+        <span class="section-sub" id="flowSub">edge -> stream -> score -> store -> enrich</span>
+      </div>
+      <div class="right">
+        <div class="ticker">
+          <span class="num" id="msgRate">0</span>
+          <span class="unit">MSG / SEC</span>
+        </div>
+        <div class="ticker">
+          <span class="num" id="lagMs" style="color:var(--green); text-shadow: 0 0 8px rgba(0,255,136,0.4)">12</span>
+          <span class="unit">P95 LAG (MS)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-wrap">
+      <svg class="pipeline-svg" viewBox="0 0 1320 320" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(140,170,220,0.05)" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="1320" height="320" fill="url(#grid)"/>
+
+        <!-- Flow paths (drawn first so they sit behind nodes) -->
+        <!-- top row: 1 -> 2 -> 3 -> 4 -> 5 -->
+        <path id="p1" class="flow-path" d="M 170 110 L 290 110"/>
+        <path id="p2" class="flow-path" d="M 410 110 L 530 110"/>
+        <path id="p3" class="flow-path" d="M 650 110 L 770 110"/>
+        <path id="p4" class="flow-path" d="M 890 110 L 1010 110"/>
+        <!-- path from TimescaleDB (5) down to Airflow (6), then over to Audit (7) -->
+        <path id="p5" class="flow-path" d="M 1075 145 L 1075 200 Q 1075 220 1055 220 L 770 220"/>
+        <path id="p6" class="flow-path" d="M 650 220 L 410 220"/>
+
+        <!-- Node 1: Autoclave Sensor -->
+        <g>
+          <rect class="node-rect blue" x="50" y="78" width="120" height="64"/>
+          <text class="node-cap blue" x="60" y="94">SENSOR | EDGE</text>
+          <text class="node-label" x="60" y="115">Autoclave</text>
+          <text class="node-sublabel" x="60" y="131">TEMP-AUTOCLAVE-1</text>
+        </g>
+
+        <!-- Node 2: PLC -->
+        <g>
+          <rect class="node-rect blue" x="290" y="78" width="120" height="64"/>
+          <text class="node-cap blue" x="300" y="94">FIELDBUS | OPC-UA</text>
+          <text class="node-label" x="300" y="115">PLC Gateway</text>
+          <text class="node-sublabel" x="300" y="131">PROFINET -> MQTT</text>
+        </g>
+
+        <!-- Node 3: Kafka -->
+        <g>
+          <rect class="node-rect orange" x="530" y="78" width="120" height="64"/>
+          <text class="node-cap orange" x="540" y="94">EVENT BUS</text>
+          <text class="node-label" x="540" y="115">Kafka</text>
+          <text class="node-sublabel" x="540" y="131">obs.raw | 14 partitions</text>
+        </g>
+
+        <!-- Node 4: Flink Scoring -->
+        <g>
+          <rect class="node-rect green" x="770" y="78" width="120" height="64"/>
+          <text class="node-cap green" x="780" y="94">STREAM | SCORE</text>
+          <text class="node-label" x="780" y="115">Flink - C(v)</text>
+          <text class="node-sublabel" x="780" y="131">physics + confidence</text>
+        </g>
+
+        <!-- Node 5: TimescaleDB -->
+        <g>
+          <rect class="node-rect blue" x="1010" y="78" width="130" height="64"/>
+          <text class="node-cap blue" x="1020" y="94">TIME-SERIES STORE</text>
+          <text class="node-label" x="1020" y="115">TimescaleDB</text>
+          <text class="node-sublabel" x="1020" y="131">obs | scored | partitions</text>
+        </g>
+
+        <!-- Node 6: Airflow + Claude -->
+        <g>
+          <rect class="node-rect purple" x="650" y="188" width="150" height="64"/>
+          <text class="node-cap purple" x="660" y="204">ORCHESTRATION | LLM</text>
+          <text class="node-label" x="660" y="225">Airflow + Claude</text>
+          <text class="node-sublabel" x="660" y="241">advisory | enrichment</text>
+        </g>
+
+        <!-- Node 7: Audit Log -->
+        <g>
+          <rect class="node-rect grey" x="290" y="188" width="120" height="64"/>
+          <text class="node-cap grey" x="300" y="204">IMMUTABLE</text>
+          <text class="node-label" x="300" y="225">Audit Log</text>
+          <text class="node-sublabel" x="300" y="241">append-only | WORM</text>
+        </g>
+
+        <!-- inline anomaly routing indicator off scoring engine (visual only) -->
+        <g opacity="0.55">
+          <path d="M 830 142 L 830 175" stroke="rgba(255,68,68,0.5)" stroke-width="1" stroke-dasharray="2 3" fill="none"/>
+          <text class="node-sublabel" x="838" y="165" fill="#ff6b6b">-> quarantine</text>
+        </g>
+
+        <!-- pulse circles created by JS -->
+        <g id="pulses"></g>
+      </svg>
+
+      <div class="pipeline-legend">
+        <div class="lg"><span class="lg-sw" style="background:var(--blue)"></span>Sensor / Store</div>
+        <div class="lg"><span class="lg-sw" style="background:var(--orange)"></span>Kafka</div>
+        <div class="lg"><span class="lg-sw" style="background:var(--green)"></span>Scoring</div>
+        <div class="lg"><span class="lg-sw" style="background:var(--red)"></span>Anomaly / Quarantine</div>
+        <div class="lg"><span class="lg-sw" style="background:var(--purple)"></span>LLM Enrichment</div>
+        <div class="lg"><span class="lg-sw" style="background:#8a96b0"></span>Audit</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 - CONFIDENCE -->
+  <section class="section">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-head">
+      <div class="left">
+        <span class="section-tag">S 02 / MODEL</span>
+        <span class="section-title">Confidence Function</span>
+        <span class="section-sub">composite scoring per observation v</span>
+      </div>
+      <div class="right">
+        <span style="color:var(--ink-4)">THRESHOLD</span>
+        <span style="color:var(--ink-2)">C(v) &lt; 0.40 -> QUARANTINE</span>
+      </div>
+    </div>
+
+    <div class="confidence-grid">
+      <div class="formula-pane">
+        <div>
+          <div class="formula">
+            C(v) <span class="op">=</span> <span class="var t">tau</span><span class="op">(</span>T<span class="op">)</span> <span class="op">x</span> <span class="var d">delta</span><span class="op">(</span>n<span class="op">)</span> <span class="op">x</span> <span class="var a">alpha</span><span class="op">(</span>sigma<span class="op">)</span>
+          </div>
+          <div class="formula-caption">
+            Every observation <b>v</b> is scored against three independent dimensions of physical plausibility. The product yields <b>C(v) in [0, 1]</b>. Readings below the quarantine threshold are routed off the hot path and flagged for advisory review.
+          </div>
+        </div>
+
+        <div class="cv-display" id="cvBox">
+          <div>
+            <div class="cv-label">Current C(v)</div>
+            <div class="cv-state" id="cvState">NOMINAL | WITHIN ENVELOPE</div>
+          </div>
+          <div class="cv-value" id="cvValue">0.000</div>
+        </div>
+      </div>
+
+      <div class="gauges-pane">
+
+        <div class="gauge t">
+          <div class="gauge-head">
+            <div>
+              <span class="gauge-name t"><span class="greek">tau</span>Temporal Coherence</span>
+              <span class="gauge-q">Did the reading arrive on time?</span>
+            </div>
+            <span class="gauge-val" id="tVal">0.000</span>
+          </div>
+          <div class="gauge-track"><div class="gauge-fill" id="tFill"></div></div>
+          <div class="gauge-scale"><span>0.0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1.0</span></div>
+        </div>
+
+        <div class="gauge d">
+          <div class="gauge-head">
+            <div>
+              <span class="gauge-name d"><span class="greek">delta</span>Density Factor</span>
+              <span class="gauge-q">Did we receive all expected samples?</span>
+            </div>
+            <span class="gauge-val" id="dVal">0.000</span>
+          </div>
+          <div class="gauge-track"><div class="gauge-fill" id="dFill"></div></div>
+          <div class="gauge-scale"><span>0.0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1.0</span></div>
+        </div>
+
+        <div class="gauge a">
+          <div class="gauge-head">
+            <div>
+              <span class="gauge-name a"><span class="greek">alpha</span>Amplitude Stability</span>
+              <span class="gauge-q">Is the signal volatility normal?</span>
+            </div>
+            <span class="gauge-val" id="aVal">0.000</span>
+          </div>
+          <div class="gauge-track"><div class="gauge-fill" id="aFill"></div></div>
+          <div class="gauge-scale"><span>0.0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1.0</span></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 - EVENT FEED -->
+  <section class="section">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-head">
+      <div class="left">
+        <span class="section-tag">S 03 / STREAM</span>
+        <span class="section-title">Observation Feed</span>
+        <span class="section-sub">scored events | live tail</span>
+      </div>
+      <div class="right">
+        <span style="color:var(--ink-4)">SOURCE</span>
+        <span>kafka://obs.scored.v1</span>
+        <span style="color:var(--ink-4)">|</span>
+        <span><span class="status-dot"></span>STREAMING</span>
+      </div>
+    </div>
+    <div class="feed-wrap">
+      <div class="feed" id="feed"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 - STATS -->
+  <section class="section">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-head">
+      <div class="left">
+        <span class="section-tag">S 04 / METRICS</span>
+        <span class="section-title">Platform Vitals</span>
+        <span class="section-sub">rolling 24h | auto-refresh 1s</span>
+      </div>
+      <div class="right">
+        <span style="color:var(--ink-4)">RETENTION</span>
+        <span>HOT 30d | WARM 365d | COLD 7y</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat accent">
+        <svg class="spark" viewBox="0 0 70 22" preserveAspectRatio="none"><path id="sp1" stroke="#00d4ff"/></svg>
+        <div>
+          <div class="stat-label">Observations Ingested</div>
+          <div class="stat-value" id="statObs">124,847</div>
+        </div>
+        <div class="stat-foot">
+          <span>LAST 24H</span>
+          <span class="delta" id="statObsDelta">+0/s</span>
+        </div>
+      </div>
+
+      <div class="stat warn">
+        <svg class="spark" viewBox="0 0 70 22" preserveAspectRatio="none"><path id="sp2" stroke="#ff4444"/></svg>
+        <div>
+          <div class="stat-label">Anomalies Detected</div>
+          <div class="stat-value" id="statAnom">23</div>
+        </div>
+        <div class="stat-foot">
+          <span>QUARANTINED</span>
+          <span style="color:var(--red)" id="statAnomDelta">0.18%</span>
+        </div>
+      </div>
+
+      <div class="stat">
+        <svg class="spark" viewBox="0 0 70 22" preserveAspectRatio="none"><path id="sp3" stroke="#00ff88"/></svg>
+        <div>
+          <div class="stat-label">Avg Confidence</div>
+          <div class="stat-value" id="statConf" style="color:var(--green)">0.873</div>
+        </div>
+        <div class="stat-foot">
+          <span>mu +/- sigma</span>
+          <span class="delta">sigma = 0.041</span>
+        </div>
+      </div>
+
+      <div class="stat purple">
+        <svg class="spark" viewBox="0 0 70 22" preserveAspectRatio="none"><path id="sp4" stroke="#9b59ff"/></svg>
+        <div>
+          <div class="stat-label">Audit Entries</div>
+          <div class="stat-value" id="statAudit">248,901</div>
+        </div>
+        <div class="stat-foot">
+          <span>WORM | IMMUTABLE</span>
+          <span class="delta" style="color:var(--purple)" id="statAuditDelta">+0/s</span>
+        </div>
+      </div>
+
+      <div class="stat orange">
+        <div>
+          <div class="stat-label">Terminal Runtime</div>
+          <div class="stat-value" id="statTerminalRate">0<span class="small">/s</span></div>
+        </div>
+        <div class="stat-foot">
+          <span id="statTerminalCounts">0 scored | 0 malformed</span>
+          <span class="delta" style="color:var(--orange)" id="statTerminalAge">waiting</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="crumbs">
+      <span>BUILD <b>v3.14.2-rc1</b></span>
+      <span>REGION <b>EU-WEST-3</b></span>
+      <span>NODES <b>14 / 14</b></span>
+      <span>PIPELINE <b>HEALTHY</b></span>
+    </div>
+      <div>COPYRIGHT VERITAS PLATFORM | OPS CONSOLE</div>
+  </footer>
+
+</div>
+
+<script>
+const $ = (selector) => document.querySelector(selector);
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const fmtInt = (value) => Math.round(Number(value || 0)).toLocaleString("en-US");
+const fmt3 = (value) => Number(value || 0).toFixed(3);
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+const feedEl = $("#feed");
+const pulseGroup = document.getElementById("pulses");
+const sparkEls = [
+  document.getElementById("sp1"),
+  document.getElementById("sp2"),
+  document.getElementById("sp3"),
+  document.getElementById("sp4"),
+];
+const sparkSeries = [
+  Array(24).fill(0),
+  Array(24).fill(0),
+  Array(24).fill(0),
+  Array(24).fill(0),
+];
+const liveState = {
+  lastScoredAt: null,
+  lastTotal: null,
+};
+
+const PATHS = [
+  { id: "p1", color: "#00d4ff", dur: 1100 },
+  { id: "p2", color: "#00d4ff", dur: 1000 },
+  { id: "p3", color: "#ff8c00", dur: 1200 },
+  { id: "p4", color: "#00ff88", dur: 1100 },
+  { id: "p5", color: "#9b59ff", dur: 1500 },
+  { id: "p6", color: "#8a96b0", dur: 1800 },
+];
+
+function tickClock() {
+  const d = new Date();
+  const pad = (x) => String(x).padStart(2, "0");
+  $("#utcClock").textContent =
+    `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ` +
+    `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}Z`;
+}
+
+function spawnPulse(pathSpec) {
+  const path = document.getElementById(pathSpec.id);
+  if (!path || !pulseGroup) return;
+  const len = path.getTotalLength();
+  const circle = document.createElementNS(SVG_NS, "circle");
+  circle.setAttribute("class", "pulse");
+  circle.setAttribute("r", 3.4);
+  circle.setAttribute("fill", pathSpec.color);
+  pulseGroup.appendChild(circle);
+
+  const start = performance.now();
+  const dur = pathSpec.dur * (0.85 + Math.random() * 0.3);
+
+  function step(now) {
+    const t = (now - start) / dur;
+    if (t >= 1) {
+      circle.remove();
+      return;
+    }
+    const pt = path.getPointAtLength(len * t);
+    circle.setAttribute("cx", pt.x);
+    circle.setAttribute("cy", pt.y);
+    const opacity = t < 0.08 ? t / 0.08 : (t > 0.92 ? (1 - t) / 0.08 : 1);
+    circle.setAttribute("opacity", opacity);
+    requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+function playPulseBurst(msgRate, anomalyRatio) {
+  const burstCount = Math.max(1, Math.min(8, Math.round(msgRate / 8)));
+  PATHS.forEach((pathSpec, idx) => {
+    const multiplier = idx >= 4 ? Math.max(1, Math.round(anomalyRatio * 10)) : burstCount;
+    const pulses = Math.min(6, multiplier);
+    for (let i = 0; i < pulses; i += 1) {
+      setTimeout(() => spawnPulse(pathSpec), idx * 60 + i * 90);
+    }
+  });
+}
+
+function pushSpark(index, value) {
+  const series = sparkSeries[index];
+  series.shift();
+  series.push(clamp(Number(value || 0), 0, 1));
+}
+
+function drawSparks() {
+  sparkEls.forEach((el, idx) => {
+    if (!el) return;
+    const data = sparkSeries[idx];
+    const width = 70;
+    const height = 22;
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const span = (max - min) || 1;
+    const points = data.map((v, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((v - min) / span) * (height - 2) - 1;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    el.setAttribute("d", `M ${points.join(" L ")}`);
+  });
+}
+
+function feedRows(payload) {
+  const rows = [];
+  if (payload.runtime && payload.runtime.latest_log) {
+    const ts = payload.runtime.updated_at
+      ? new Date(payload.runtime.updated_at).toLocaleTimeString("fr-FR", { hour12: false })
+      : "--:--:--";
+    rows.push(`
+      <div class="row advisory">
+        <span class="ts">[${ts}]</span>
+        <span class="glyph">&gt;</span>
+        <span class="body"><span class="tag">Terminal:</span> ${payload.runtime.latest_log}</span>
+      </div>`);
+  }
+  (payload.confidence || []).slice(0, 5).forEach((item, idx) => {
+    const ts = item.scored_at
+      ? new Date(item.scored_at).toLocaleTimeString("fr-FR", { hour12: false })
+      : "--:--:--";
+    rows.push(`
+      <div class="row ${(item.is_anomaly || Number(item.confidence || 0) < 0.4) ? "warn" : "ok"}">
+        <span class="ts">[${ts}]</span>
+        <span class="glyph">${(item.is_anomaly || Number(item.confidence || 0) < 0.4) ? "!" : "+"}</span>
+        <span class="id">${item.sensor_id}</span>
+        <span class="cv">C(v)=${fmt3(item.confidence)}</span>
+        <span class="tail">${Number(item.value || 0).toFixed(3)} ${item.unit || ""} | ${item.anomaly_label || "nominal"}</span>
+      </div>`);
+
+    if (idx < (payload.advisories || []).length) {
+      const advisory = payload.advisories[idx];
+      rows.push(`
+        <div class="row advisory">
+          <span class="ts">[${ts}]</span>
+          <span class="glyph">i</span>
+          <span class="body"><span class="tag">Advisory:</span> ${advisory.sensor_id} | ${advisory.message}</span>
+        </div>`);
+    }
+  });
+  return rows.join("");
+}
+
+function applyLive(payload) {
+  const summary = payload.summary || {};
+  const runtime = payload.runtime || {};
+  const confidence = payload.confidence || [];
+  const total = Number(summary.total_scored || 0);
+  const anomalies = Number(summary.anomaly_count || 0);
+  const avgConf = Number(summary.avg_confidence || 0);
+  const totalAudit = Number(summary.total_audit || 0);
+  const msgRate = Number(summary.recent_rate || 0);
+  const lagP95 = Number(summary.lag_p95_ms || 0);
+  const sensorCount = Number(summary.sensor_count || 0);
+  const latestScoredAt = confidence.length ? String(confidence[0].scored_at || "") : "";
+  const hasFreshData = latestScoredAt !== liveState.lastScoredAt || total !== liveState.lastTotal;
+  const worst = confidence.reduce((acc, row) => {
+    if (!acc || Number(row.confidence || 0) < Number(acc.confidence || 0)) return row;
+    return acc;
+  }, confidence[0] || { tau: 0, delta: 0, alpha: 0, confidence: 0 });
+
+  const tau = clamp(Number(worst.tau || avgConf), 0, 1);
+  const delta = clamp(Number(worst.delta || 1), 0, 1);
+  const alpha = clamp(Number(worst.alpha || 1), 0, 1);
+  const cv = clamp(Number(worst.confidence || avgConf), 0, 1);
+
+  $("#runStatus").textContent = `LIVE PIPELINE | ${fmtInt(total)} scored | ${fmtInt(anomalies)} anomalies`;
+  $("#flowSub").textContent = `backend: monitoring api | sensors: ${sensorCount} | queue p95: ${Math.round(lagP95)} ms`;
+  $("#msgRate").textContent = fmtInt(msgRate);
+  $("#lagMs").textContent = Math.round(lagP95);
+  const lagEl = $("#lagMs");
+  if (lagEl) {
+    if (lagP95 > 2000) {
+      lagEl.style.color = "var(--orange)";
+      lagEl.style.textShadow = "0 0 8px rgba(255,140,0,0.4)";
+    } else {
+      lagEl.style.color = "var(--green)";
+      lagEl.style.textShadow = "0 0 8px rgba(0,255,136,0.4)";
+    }
+  }
+  $("#statObs").textContent = fmtInt(total);
+  $("#statAnom").textContent = fmtInt(anomalies);
+  $("#statConf").textContent = fmt3(avgConf);
+  $("#statAudit").textContent = fmtInt(totalAudit);
+  $("#statObsDelta").textContent = `+${Math.max(0, Math.round(msgRate))}/s`;
+  $("#statAnomDelta").textContent = `${((anomalies / Math.max(total, 1)) * 100).toFixed(2)}%`;
+  $("#statAuditDelta").textContent = `${sensorCount} sensors`;
+  const runtimeRate = Number(runtime.rate_per_sec || 0);
+  const runtimeScored = Number(runtime.scored || 0);
+  const runtimeAnomalies = Number(runtime.anomalies || 0);
+  const runtimeMalformed = Number(runtime.malformed || 0);
+  const termRateEl = $("#statTerminalRate");
+  const termCountsEl = $("#statTerminalCounts");
+  const termAgeEl = $("#statTerminalAge");
+  if (termRateEl) termRateEl.innerHTML = `${runtimeRate.toFixed(1)}<span class="small">/s</span>`;
+  if (termCountsEl) termCountsEl.textContent =
+    `${fmtInt(runtimeScored)} scored | ${fmtInt(runtimeAnomalies)} anomalies | ${fmtInt(runtimeMalformed)} malformed`;
+  if (termAgeEl) termAgeEl.textContent = runtime.updated_at
+    ? new Date(runtime.updated_at).toLocaleTimeString("fr-FR", { hour12: false })
+    : "waiting";
+  if (runtime.latest_log && feedEl) {
+    feedEl.dataset.terminalLog = runtime.latest_log;
+  }
+
+  $("#tFill").style.width = `${(tau * 100).toFixed(1)}%`;
+  $("#dFill").style.width = `${(delta * 100).toFixed(1)}%`;
+  $("#aFill").style.width = `${(alpha * 100).toFixed(1)}%`;
+  $("#tVal").textContent = fmt3(tau);
+  $("#dVal").textContent = fmt3(delta);
+  $("#aVal").textContent = fmt3(alpha);
+  $("#cvValue").textContent = fmt3(cv);
+
+  const cvState = $("#cvState");
+  const cvBox = $("#cvBox");
+  cvBox.classList.toggle("alarm", cv < 0.4);
+  if (cv >= 0.85) cvState.textContent = "NOMINAL | WITHIN ENVELOPE";
+  else if (cv >= 0.65) cvState.textContent = "CAUTION | TRENDING";
+  else if (cv >= 0.4) cvState.textContent = "DEGRADED | UNDER REVIEW";
+  else cvState.textContent = "ANOMALY DETECTED | QUARANTINE OPEN";
+
+  if (hasFreshData) {
+    if (feedEl) feedEl.innerHTML = feedRows(payload);
+    pushSpark(0, Math.min(msgRate / 25.0, 1));
+    pushSpark(1, anomalies / Math.max(total, 1));
+    pushSpark(2, avgConf);
+    pushSpark(3, Math.min(totalAudit / Math.max(total, 1), 1));
+    drawSparks();
+    playPulseBurst(msgRate, anomalies / Math.max(total, 1));
+    liveState.lastScoredAt = latestScoredAt;
+    liveState.lastTotal = total;
+  }
+}
+
+async function loadLive() {
+  const response = await fetch("/api/live", { cache: "no-store" });
+  if (!response.ok) throw new Error(`live fetch failed: ${response.status}`);
+  const payload = await response.json();
+  applyLive(payload);
+}
+
+async function uploadBatch() {
+  const input = document.getElementById("fileInput");
+  if (!input.files.length) {
+    $("#runStatus").textContent = "SELECT A FILE FIRST";
+    return;
+  }
+  const file = input.files[0];
+  $("#runStatus").textContent = "UPLOADING | RUNNING BATCH ANALYSIS";
+  const bytes = await file.arrayBuffer();
+  const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/octet-stream" },
+    body: bytes,
+  });
+  if (!response.ok) throw new Error(`upload failed: ${response.status}`);
+  liveState.lastScoredAt = null;
+  liveState.lastTotal = null;
+  await loadLive();
+  $("#runStatus").textContent = "BATCH ANALYSIS COMPLETE | LIVE PIPELINE STILL ACTIVE";
+}
+
+async function refreshLoop() {
+  try {
+    await loadLive();
+  } catch (error) {
+    console.error(error);
+    $("#runStatus").textContent = "BACKEND ERROR | SEE CONSOLE";
+  }
+}
+
+document.getElementById("uploadBtn").addEventListener("click", () => {
+  uploadBatch().catch((error) => {
+    console.error(error);
+    $("#runStatus").textContent = "UPLOAD FAILED | SEE CONSOLE";
+  });
+});
+
+tickClock();
+setInterval(tickClock, 1000);
+drawSparks();
+refreshLoop();
+setInterval(refreshLoop, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veritas_operational"
+version = "0.1.0"
+description = "Operational data quality application services for Veritas"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.3",
+    "numpy>=2.0",
+    "pyyaml>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
