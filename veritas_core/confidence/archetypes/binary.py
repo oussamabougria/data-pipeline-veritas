@@ -11,7 +11,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from .base import BaseArchetype
+from .base import BaseArchetype, _q
 
 if TYPE_CHECKING:
     from veritas_core.skills.base import SkillContext
